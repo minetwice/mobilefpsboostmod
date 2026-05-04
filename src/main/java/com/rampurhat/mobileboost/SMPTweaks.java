@@ -1,0 +1,1 @@
+package com.rampurhat.mobileboost; public class SMPTweaks { public static void enable(){} }
