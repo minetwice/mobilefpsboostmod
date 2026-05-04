@@ -1,0 +1,1 @@
+package com.rampurhat.mobileboost; public class NativeBridge { public static native boolean shouldCull(float x,float y,float z,float r); }
