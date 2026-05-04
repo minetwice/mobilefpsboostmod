@@ -1,0 +1,1 @@
+package com.rampurhat.mobileboost; public class BoostAPI { public static void autoTuneForPhone(String m){} public static void enableNativeMath(){} public static void setRenderDistance(int i){} }
