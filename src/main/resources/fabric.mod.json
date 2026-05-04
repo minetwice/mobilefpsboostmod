@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "mobile-boost",
+  "version": "${version}",
+  "name": "Mobile Boost",
+  "description": "200 FPS mobile optimizer for PojavLauncher",
+  "authors": ["RampurHat"],
+  "entrypoints": { "client": ["com.rampurhat.mobileboost.MobileBoost"] },
+  "mixins": ["mobileboost.mixins.json"],
+  "depends": { "fabricloader": ">=0.15", "minecraft": "~1.20.4", "fabric-api": "*" }
+}
