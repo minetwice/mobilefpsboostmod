@@ -1,0 +1,1 @@
+package com.rampurhat.mobileboost; public class AfkFix { public static void tick(){} }
