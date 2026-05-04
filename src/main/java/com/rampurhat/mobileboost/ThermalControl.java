@@ -1,0 +1,1 @@
+package com.rampurhat.mobileboost; public class ThermalControl { public static void check(){} }
