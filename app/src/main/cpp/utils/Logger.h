@@ -1,41 +1,16 @@
-#ifndef LOGGER_H
-#define LOGGER_H
-
-#include <string>
+// MinecraftMobileOptimizer/app/src/main/cpp/utils/Logger.h
+#pragma once
 #include <android/log.h>
 
-namespace MCOptimizer {
-
-enum class LogLevel {
-    DEBUG,
-    INFO,
-    WARNING,
-    ERROR
-};
+#define MC_LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, "MCOptimizer", __VA_ARGS__)
+#define MC_LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "MCOptimizer", __VA_ARGS__)
+#define MC_LOGI(...) __android_log_print(ANDROID_LOG_INFO, "MCOptimizer", __VA_ARGS__)
+#define MC_LOGW(...) __android_log_print(ANDROID_LOG_WARN, "MCOptimizer", __VA_ARGS__)
+#define MC_LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "MCOptimizer", __VA_ARGS__)
 
 class Logger {
 public:
     static void init();
-    
-    static void debug(const char* tag, const char* message);
-    static void info(const char* tag, const char* message);
-    static void warning(const char* tag, const char* message);
-    static void error(const char* tag, const char* message);
-    
-    // Printf-style logging
-    static void debug(const char* tag, const char* format, ...);
-    static void info(const char* tag, const char* format, ...);
-    static void warning(const char* tag, const char* format, ...);
-    static void error(const char* tag, const char* format, ...);
-    
-    static void setLogLevel(LogLevel level) { s_logLevel = level; }
-    static LogLevel getLogLevel() { return s_logLevel; }
-    
-private:
-    static LogLevel s_logLevel;
-    static void log(LogLevel level, const char* tag, const char* message, va_list args);
+    static void setLogLevel(int level);
+    static void logPerformanceStats();
 };
-
-} // namespace MCOptimizer
-
-#endif // LOGGER_H
