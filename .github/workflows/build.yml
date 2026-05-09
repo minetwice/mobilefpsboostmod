@@ -19,13 +19,12 @@ on:
           - both
 
 env:
-  MINECRAFT_VERSION: 1.21.11
+  MINECRAFT_VERSION: '1.21.11'
   JAVA_VERSION: '21'
   GRADLE_VERSION: '8.7'
   NDK_VERSION: '26.1.10909125'
 
 jobs:
-  # ==================== SETUP GRADLE ====================
   setup:
     runs-on: ubuntu-latest
     outputs:
@@ -72,7 +71,7 @@ jobs:
           
           # Verify
           echo "Verifying gradlew..."
-          ./gradlew --version
+          bash ./gradlew --version
 
       - name: Create Mod Gradle Wrapper
         run: |
@@ -83,12 +82,8 @@ jobs:
           cp gradle/wrapper/gradle-wrapper.jar mod/gradle/wrapper/ 2>/dev/null || true
           cp gradle/wrapper/gradle-wrapper.properties mod/gradle/wrapper/ 2>/dev/null || true
           
-          # Create mod gradlew script
-          cat > mod/gradlew << 'MODGRADLE'
-#!/bin/sh
-cd "$(dirname "$0")/.." || exit 1
-exec ./gradlew "$@"
-MODGRADLE
+          # Create mod gradlew script using printf
+          printf '%s\n' '#!/bin/sh' 'cd "$(dirname "$0")/.." || exit 1' 'exec ./gradlew "$@"' > mod/gradlew
           
           chmod +x mod/gradlew
           ls -la mod/gradlew
@@ -108,7 +103,7 @@ MODGRADLE
       - name: Verify Setup
         run: |
           echo "=== Gradle Version ==="
-          ./gradlew --version
+          bash ./gradlew --version
           echo ""
           echo "=== Project Structure ==="
           ls -la
@@ -119,7 +114,6 @@ MODGRADLE
           echo "=== Mod Wrapper ==="
           ls -la mod/gradlew
 
-  # ==================== BUILD ANDROID APK ====================
   build-android:
     needs: setup
     runs-on: ubuntu-latest
@@ -154,15 +148,14 @@ MODGRADLE
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Fix Gradle Wrapper Permissions
+      - name: Fix Gradle Permissions
         run: |
-          # Ensure gradlew exists and is executable
           if [ ! -f "./gradlew" ]; then
             echo "ERROR: gradlew not found!"
             exit 1
           fi
           chmod +x ./gradlew
-          ./gradlew --version
+          bash ./gradlew --version
 
       - name: Create local.properties
         run: |
@@ -173,7 +166,7 @@ MODGRADLE
       - name: Build Debug APK
         if: github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'both' || github.event_name == 'pull_request'
         run: |
-          ./gradlew :app:assembleDebug --stacktrace --no-daemon
+          bash ./gradlew :app:assembleDebug --stacktrace --no-daemon
         env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
           ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
@@ -181,7 +174,7 @@ MODGRADLE
       - name: Build Release APK
         if: github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
-          ./gradlew :app:assembleRelease --stacktrace --no-daemon -Pandroid.injected.signing.store.file=debug.keystore -Pandroid.injected.signing.store.password=android -Pandroid.injected.signing.key.alias=androiddebugkey -Pandroid.injected.signing.key.password=android
+          bash ./gradlew :app:assembleRelease --stacktrace --no-daemon -Pandroid.injected.signing.store.file=debug.keystore -Pandroid.injected.signing.store.password=android -Pandroid.injected.signing.key.alias=androiddebugkey -Pandroid.injected.signing.key.password=android
         env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
           ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
@@ -212,7 +205,6 @@ MODGRADLE
           if-no-files-found: warn
           retention-days: 7
 
-  # ==================== BUILD MINECRAFT MOD ====================
   build-mod:
     needs: setup
     runs-on: ubuntu-latest
@@ -237,30 +229,24 @@ MODGRADLE
           restore-keys: |
             ${{ runner.os }}-gradle-mod-
 
-      - name: Fix Gradle Wrapper Permissions
+      - name: Fix Gradle Permissions
         run: |
-          # Ensure gradlew exists and is executable
           if [ ! -f "./gradlew" ]; then
             echo "ERROR: gradlew not found!"
             exit 1
           fi
           chmod +x ./gradlew
           
-          # Ensure mod gradlew exists
           if [ ! -f "./mod/gradlew" ]; then
             mkdir -p mod/gradle/wrapper
             cp gradle/wrapper/gradle-wrapper.jar mod/gradle/wrapper/ 2>/dev/null || true
             cp gradle/wrapper/gradle-wrapper.properties mod/gradle/wrapper/ 2>/dev/null || true
             
-            cat > mod/gradlew << 'MODGRADLE'
-#!/bin/sh
-cd "$(dirname "$0")/.." || exit 1
-exec ./gradlew "$@"
-MODGRADLE
+            printf '%s\n' '#!/bin/sh' 'cd "$(dirname "$0")/.." || exit 1' 'exec ./gradlew "$@"' > mod/gradlew
             chmod +x mod/gradlew
           fi
           
-          ./gradlew --version
+          bash ./gradlew --version
 
       - name: Build Minecraft Mod
         run: |
@@ -297,7 +283,6 @@ MODGRADLE
           if-no-files-found: warn
           retention-days: 30
 
-  # ==================== RELEASE ====================
   release:
     needs: [build-android, build-mod]
     runs-on: ubuntu-latest
@@ -315,14 +300,9 @@ MODGRADLE
       - name: Organize Release Files
         run: |
           mkdir -p release
-          
-          # Copy APKs
           find artifacts -name "*.apk" -exec cp {} release/ \;
-          
-          # Copy Mod JARs (exclude sources and dev)
           find artifacts -name "*[0-9].jar" ! -name "*-sources.jar" ! -name "*-dev.jar" -exec cp {} release/ \;
           
-          # Rename with version
           VERSION=${GITHUB_REF_NAME#v}
           for f in release/*; do
             base=$(basename "$f")
@@ -337,7 +317,7 @@ MODGRADLE
       - name: Generate Release Notes
         run: |
           cat > release/RELEASE_NOTES.md << 'EOF'
-          # MC Optimizer v${GITHUB_REF_NAME}
+          # MC Optimizer
           
           ## Minecraft Version
           - **Java Edition:** 1.21.11
@@ -380,7 +360,6 @@ MODGRADLE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ==================== STATUS ====================
   notify:
     needs: [build-android, build-mod]
     runs-on: ubuntu-latest
