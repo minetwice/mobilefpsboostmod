@@ -1,12 +1,27 @@
-# Mobile Boost
-200 FPS mod for PojavLauncher
+# Minecraft Mobile Optimizer v1.0.0
 
-## Compile
+**For Minecraft Java Edition 1.21.11 | Java 21**
+
+High-performance optimization engine for running Minecraft Java Edition smoothly on Android devices.
+
+## Requirements
+
+- Android 8.0+ (API 26+)
+- Minecraft Java 1.21.11
+- Java 21 Runtime
+- Fabric Loader 0.16.10+
+
+## Features
+
+- Native C++ optimization engine
+- Dynamic resolution scaling
+- Frame pacing for stable FPS
+- Memory pool management
+- Automatic in-game settings adjustment
+- Aggressive & moderate optimization modes
+
+## Building
+
+### Android App
 ```bash
-git clone <repo>
-./gradlew build
-```
-Jar: `build/libs/mobile-boost-1.0.0.jar`
-
-## GitHub Actions
-Push to GitHub, Actions tab se jar download karo.
+./gradlew :app:assembleRelease
