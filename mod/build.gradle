@@ -29,17 +29,11 @@ loom {
 }
 
 dependencies {
-    // Minecraft 1.21.11
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    
-    // Official Mojang mappings - no unpick issues
     mappings loom.officialMojangMappings()
-    
-    // Fabric Loader
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     
-    // Fabric API
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    // NO Fabric API - only loader
 }
 
 processResources {
