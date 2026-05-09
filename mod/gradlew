@@ -1,0 +1,6 @@
+#!/bin/sh
+# MinecraftMobileOptimizer/mod/gradlew
+# This delegates to root gradlew
+
+cd "$(dirname "$0")/.." || exit 1
+exec ./gradlew "$@"
