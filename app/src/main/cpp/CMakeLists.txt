@@ -1,11 +1,12 @@
-cmake_minimum_required(VERSION 3.18.1)
-
+# MinecraftMobileOptimizer/app/src/main/cpp/CMakeLists.txt
+cmake_minimum_required(VERSION 3.22.1)
 project("mcoptimizer")
 
-# Find required packages
-find_package(log REQUIRED)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Add source files
+find_package(Vulkan)
+
 set(SOURCES
     native-lib.cpp
     renderer/VulkanRenderer.cpp
@@ -15,18 +16,15 @@ set(SOURCES
     utils/Logger.cpp
 )
 
-# Create shared library
-add_library(mcoptimizer SHARED ${SOURCES})
-
-# Include directories
-target_include_directories(mcoptimizer PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/renderer
-    ${CMAKE_CURRENT_SOURCE_DIR}/optimizer
-    ${CMAKE_CURRENT_SOURCE_DIR}/utils
+include_directories(
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/renderer
+    ${CMAKE_SOURCE_DIR}/optimizer
+    ${CMAKE_SOURCE_DIR}/utils
 )
 
-# Link libraries
+add_library(mcoptimizer SHARED ${SOURCES})
+
 target_link_libraries(mcoptimizer
     android
     log
@@ -34,10 +32,15 @@ target_link_libraries(mcoptimizer
     GLESv3
 )
 
-# Compiler flags
+if(Vulkan_FOUND)
+    target_link_libraries(mcoptimizer Vulkan::Vulkan)
+    target_compile_definitions(mcoptimizer PRIVATE HAS_VULKAN=1)
+endif()
+
 target_compile_options(mcoptimizer PRIVATE
-    -Wall
-    -Wextra
-    -std=c++17
-    -O2
+    -O3
+    -ffast-math
+    -funroll-loops
+    -fomit-frame-pointer
+    -DNDEBUG
 )
