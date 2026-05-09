@@ -1,21 +1,19 @@
 {
   "schemaVersion": 1,
   "id": "mcoptimizer",
-  "version": "1.0.0",
-  "name": "MC Optimizer - FPS Booster",
-  "description": "A performance optimization mod for Minecraft that boosts FPS through rendering optimizations, memory management, and frame pacing.",
-  "authors": [
-    "MCOptimizer Team"
-  ],
+  "version": "${version}",
+  "name": "MC Optimizer",
+  "description": "Performance optimization mod for Minecraft 1.21.11 on mobile",
+  "authors": ["Twicefear"],
   "contact": {
-    "homepage": "https://github.com/mcoptimizer/mcoptimizer",
-    "sources": "https://github.com/mcoptimizer/mcoptimizer"
+    "homepage": "https://github.com/yourusername/MinecraftMobileOptimizer",
+    "sources": "https://github.com/yourusername/MinecraftMobileOptimizer"
   },
   "license": "MIT",
   "icon": "assets/mcoptimizer/icon.png",
   "environment": "client",
   "entrypoints": {
-    "main": [
+    "client": [
       "com.mcoptimizer.mod.FPSBoosterMod"
     ]
   },
@@ -23,13 +21,9 @@
     "mcoptimizer.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.14.0",
-    "minecraft": "~1.20.x",
-    "java": ">=17",
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
     "fabric-api": "*"
-  },
-  "suggests": {
-    "sodium": "*",
-    "lithium": "*"
   }
 }
