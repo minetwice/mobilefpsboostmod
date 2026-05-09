@@ -29,17 +29,17 @@ loom {
 }
 
 dependencies {
+    // Minecraft
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    
+    // Official Mojang mappings
     mappings loom.officialMojangMappings()
+    
+    // Fabric Loader
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     
-    // Use Fabric API BOM for automatic version management
-    modImplementation platform("net.fabricmc.fabric-api:fabric-api-bom:${project.fabric_api_version}")
-    modImplementation "net.fabricmc.fabric-api:fabric-api"
-    
-    // Or specific modules
-    // modImplementation "net.fabricmc.fabric-api:fabric-api-base"
-    // modImplementation "net.fabricmc.fabric-api:fabric-resource-loader-v0"
+    // Fabric API - direct dependency without BOM
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 }
 
 processResources {
