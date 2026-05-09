@@ -1,47 +1,23 @@
-#ifndef FRAME_PACER_H
-#define FRAME_PACER_H
-
+// MinecraftMobileOptimizer/app/src/main/cpp/optimizer/FramePacer.h
+#pragma once
 #include <chrono>
-#include <cstdint>
-
-namespace MCOptimizer {
 
 class FramePacer {
 public:
-    static FramePacer& getInstance();
-    
-    void initialize();
+    explicit FramePacer(int targetFps);
+    ~FramePacer();
     void beginFrame();
     void endFrame();
-    void optimize();
-    
-    void setTargetFPS(int fps);
-    int getTargetFPS() const { return m_targetFPS; }
-    
-    int64_t getLastFrameTime() const { return m_lastFrameTimeMs; }
-    float getCurrentFPS() const { return m_currentFPS; }
-    
-    void setEnabled(bool enabled) { m_enabled = enabled; }
-    bool isEnabled() const { return m_enabled; }
-    
+    int getCurrentFps() const;
+    float getFrameTimeMs() const;
+    void setTargetFps(int fps);
 private:
-    FramePacer() = default;
-    ~FramePacer() = default;
-    FramePacer(const FramePacer&) = delete;
-    FramePacer& operator=(const FramePacer&) = delete;
-    
-    void calculateFrameTime();
-    void waitForNextFrame();
-    
-    int m_targetFPS = 60;
-    int64_t m_lastFrameTimeMs = 0;
-    float m_currentFPS = 60.0f;
-    bool m_enabled = true;
-    
-    std::chrono::steady_clock::time_point m_frameStart;
-    std::chrono::steady_clock::time_point m_frameEnd;
+    int targetFps_;
+    float targetFrameTimeMs_;
+    std::chrono::high_resolution_clock::time_point frameStart_;
+    std::chrono::high_resolution_clock::time_point lastFrameTime_;
+    int frameCount_ = 0;
+    int currentFps_ = 0;
+    float frameTimeMs_ = 0.0f;
+    std::chrono::high_resolution_clock::time_point fpsUpdateTime_;
 };
-
-} // namespace MCOptimizer
-
-#endif // FRAME_PACER_H
