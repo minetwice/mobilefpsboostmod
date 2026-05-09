@@ -2,10 +2,10 @@ name: Build MC Optimizer v1.0.0
 
 on:
   push:
-    branches: [ main, develop, release/* ]
-    tags: [ 'v*' ]
+    branches: [main, develop, release]
+    tags: ['v*']
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
     inputs:
       build_type:
@@ -20,24 +20,23 @@ on:
 
 env:
   MINECRAFT_VERSION: 1.21.11
-  JAVA_VERSION: 21
-  GRADLE_VERSION: 8.5
-  NDK_VERSION: 26.1.10909125
+  JAVA_VERSION: '21'
+  GRADLE_VERSION: '8.5'
+  NDK_VERSION: '26.1.10909125'
 
 jobs:
-  # ==================== SETUP GRADLE WRAPPER ====================
+  # ==================== SETUP GRADLE ====================
   setup:
     runs-on: ubuntu-latest
     outputs:
       gradle-cached: ${{ steps.cache-gradle.outputs.cache-hit }}
-    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup JDK ${{ env.JAVA_VERSION }}
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -62,8 +61,6 @@ jobs:
               gradle wrapper --gradle-version ${{ env.GRADLE_VERSION }}
             }
           fi
-          
-          # Ensure executable
           chmod +x ./gradlew
           
           # Create mod gradlew if missing
@@ -73,15 +70,11 @@ jobs:
             cp gradle/wrapper/gradle-wrapper.jar mod/gradle/wrapper/ 2>/dev/null || true
             cp gradle/wrapper/gradle-wrapper.properties mod/gradle/wrapper/ 2>/dev/null || true
             
-            cat > mod/gradlew << 'EOF'
-#!/bin/sh
-cd "$(dirname "$0")/.." || exit 1
-exec ./gradlew "$@"
-EOF
+            printf '%s\n' '#!/bin/sh' 'cd "$(dirname "$0")/.." || exit 1' 'exec ./gradlew "$@"' > mod/gradlew
             chmod +x mod/gradlew
           fi
 
-      - name: Cache Gradle Wrapper
+      - name: Cache Gradle
         id: cache-gradle
         uses: actions/cache@v4
         with:
@@ -112,12 +105,11 @@ EOF
     needs: setup
     runs-on: ubuntu-latest
     if: github.event.inputs.build_type != 'mod-only'
-    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup JDK ${{ env.JAVA_VERSION }}
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -143,7 +135,7 @@ EOF
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Generate Gradle Wrapper (if missing)
+      - name: Generate Gradle Wrapper
         run: |
           if [ ! -f "./gradlew" ]; then
             sudo apt-get update && sudo apt-get install -y gradle
@@ -160,9 +152,7 @@ EOF
       - name: Build Debug APK
         if: github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'both' || github.event_name == 'pull_request'
         run: |
-          ./gradlew :app:assembleDebug \
-            --stacktrace \
-            --no-daemon
+          ./gradlew :app:assembleDebug --stacktrace --no-daemon
         env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
           ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
@@ -170,13 +160,7 @@ EOF
       - name: Build Release APK
         if: github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
-          ./gradlew :app:assembleRelease \
-            --stacktrace \
-            --no-daemon \
-            -Pandroid.injected.signing.store.file=debug.keystore \
-            -Pandroid.injected.signing.store.password=android \
-            -Pandroid.injected.signing.key.alias=androiddebugkey \
-            -Pandroid.injected.signing.key.password=android
+          ./gradlew :app:assembleRelease --stacktrace --no-daemon -Pandroid.injected.signing.store.file=debug.keystore -Pandroid.injected.signing.store.password=android -Pandroid.injected.signing.key.alias=androiddebugkey -Pandroid.injected.signing.key.password=android
         env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
           ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
@@ -212,12 +196,11 @@ EOF
     needs: setup
     runs-on: ubuntu-latest
     if: github.event.inputs.build_type != 'android-only'
-    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup JDK ${{ env.JAVA_VERSION }}
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -233,7 +216,7 @@ EOF
           restore-keys: |
             ${{ runner.os }}-gradle-mod-
 
-      - name: Generate Gradle Wrapper (if missing)
+      - name: Generate Gradle Wrapper
         run: |
           if [ ! -f "./gradlew" ]; then
             sudo apt-get update && sudo apt-get install -y gradle
@@ -247,31 +230,21 @@ EOF
             cp gradle/wrapper/gradle-wrapper.jar mod/gradle/wrapper/ 2>/dev/null || true
             cp gradle/wrapper/gradle-wrapper.properties mod/gradle/wrapper/ 2>/dev/null || true
             
-            cat > mod/gradlew << 'EOF'
-#!/bin/sh
-cd "$(dirname "$0")/.." || exit 1
-exec ./gradlew "$@"
-EOF
+            printf '%s\n' '#!/bin/sh' 'cd "$(dirname "$0")/.." || exit 1' 'exec ./gradlew "$@"' > mod/gradlew
             chmod +x mod/gradlew
           fi
 
       - name: Build Minecraft Mod
         run: |
           cd mod
-          ../gradlew build \
-            --stacktrace \
-            --no-daemon \
-            -Pminecraft_version=${{ env.MINECRAFT_VERSION }}
+          ../gradlew build --stacktrace --no-daemon -Pminecraft_version=${{ env.MINECRAFT_VERSION }}
         env:
           GRADLE_OPTS: -Xmx4G
 
       - name: Run Mod Tests
         run: |
           cd mod
-          ../gradlew test \
-            --stacktrace \
-            --no-daemon \
-            || echo "Tests completed with warnings"
+          ../gradlew test --stacktrace --no-daemon || echo "Tests completed with warnings"
 
       - name: Upload Mod JAR
         uses: actions/upload-artifact@v4
@@ -296,12 +269,11 @@ EOF
           if-no-files-found: warn
           retention-days: 30
 
-  # ==================== COMBINED RELEASE ====================
+  # ==================== RELEASE ====================
   release:
     needs: [build-android, build-mod]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -336,7 +308,7 @@ EOF
 
       - name: Generate Release Notes
         run: |
-          cat > release/RELEASE_NOTES.md << EOF
+          cat > release/RELEASE_NOTES.md << 'EOF'
           # MC Optimizer v${GITHUB_REF_NAME}
           
           ## Minecraft Version
@@ -350,7 +322,7 @@ EOF
           
           ## Installation
           1. Install APK on Android device (Android 8.0+)
-          2. Place mod JAR in \`.minecraft/mods/\`
+          2. Place mod JAR in `.minecraft/mods/`
           3. Launch Minecraft via optimizer app
           
           ## Features
@@ -366,9 +338,6 @@ EOF
           - 4GB+ RAM recommended
           - Vulkan 1.1+ or OpenGL ES 3.2+
           - Minecraft Java 1.21.11 with Fabric
-          
-          ---
-          Built with ❤️ for Minecraft mobile players
           EOF
 
       - name: Create GitHub Release
@@ -383,12 +352,11 @@ EOF
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ==================== NOTIFICATION ====================
+  # ==================== STATUS ====================
   notify:
     needs: [build-android, build-mod]
     runs-on: ubuntu-latest
     if: always()
-    
     steps:
       - name: Build Status Summary
         run: |
