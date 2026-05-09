@@ -1,9 +1,10 @@
 {
   "required": true,
+  "minVersion": "0.8",
   "package": "com.mcoptimizer.mod.mixin",
-  "compatibilityLevel": "JAVA_17",
-  "mixins": [
-    "MinecraftMixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "MinecraftClientMixin",
     "WorldRendererMixin",
     "EntityRendererMixin"
   ],
