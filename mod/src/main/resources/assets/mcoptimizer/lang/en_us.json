@@ -1,12 +1,8 @@
 {
-  "mcoptimizer.title": "MC Optimizer",
-  "mcoptimizer.description": "FPS Booster for Minecraft",
-  "mcoptimizer.config.title": "MC Optimizer Settings",
-  "mcoptimizer.config.fps_boost": "Enable FPS Boost",
-  "mcoptimizer.config.render_optimizations": "Render Optimizations",
-  "mcoptimizer.config.memory_optimizations": "Memory Optimizations",
-  "mcoptimizer.config.target_fps": "Target FPS",
-  "mcoptimizer.config.graphics_quality": "Graphics Quality",
-  "mcoptimizer.status.optimized": "Optimized",
-  "mcoptimizer.status.normal": "Normal"
+  "mod.mcoptimizer.name": "MC Optimizer",
+  "mod.mcoptimizer.description": "Boosts FPS for MC 1.21.11 on mobile",
+  "gui.mcoptimizer.title": "Optimizer Settings",
+  "gui.mcoptimizer.aggressive": "Aggressive Mode",
+  "gui.mcoptimizer.dynamic_resolution": "Dynamic Resolution",
+  "gui.mcoptimizer.fps_target": "FPS Target: %d"
 }
