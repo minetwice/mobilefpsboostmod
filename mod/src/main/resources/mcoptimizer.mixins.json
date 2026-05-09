@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.mcoptimizer.mod.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "MinecraftMixin",
+    "WorldRendererMixin",
+    "EntityRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
