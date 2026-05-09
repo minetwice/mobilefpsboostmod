@@ -1,51 +1,30 @@
-#ifndef MEMORY_POOL_H
-#define MEMORY_POOL_H
-
+// MinecraftMobileOptimizer/app/src/main/cpp/optimizer/MemoryPool.h
+#pragma once
 #include <cstddef>
-#include <cstdint>
 #include <vector>
-
-namespace MCOptimizer {
+#include <memory>
 
 struct MemoryBlock {
-    void* data;
+    void* ptr;
     size_t size;
-    bool inUse;
+    bool used;
+    size_t offset;
 };
 
 class MemoryPool {
 public:
-    static MemoryPool& getInstance();
-    
-    static void* allocate(size_t size);
-    static void free(void* ptr);
-    static void clear();
-    static void optimize();
-    
-    void initialize(size_t poolSize);
-    void destroy();
-    
-    void* allocateBlock(size_t size);
-    void freeBlock(void* ptr);
-    
-    size_t getTotalAllocated() const { return m_totalAllocated; }
-    size_t getFreeMemory() const { return m_poolSize - m_totalAllocated; }
-    size_t getPeakUsage() const { return m_peakUsage; }
-    
+    explicit MemoryPool(size_t totalSize);
+    ~MemoryPool();
+    void* allocate(size_t size);
+    void free(void* ptr);
+    void defragment();
+    void releaseUnused();
+    size_t getUsedMemory() const;
+    size_t getFreeMemory() const;
+    float getFragmentationRatio() const;
 private:
-    MemoryPool() = default;
-    ~MemoryPool() = default;
-    MemoryPool(const MemoryPool&) = delete;
-    MemoryPool& operator=(const MemoryPool&) = delete;
-    
-    std::vector<MemoryBlock> m_blocks;
-    uint8_t* m_pool = nullptr;
-    size_t m_poolSize = 0;
-    size_t m_totalAllocated = 0;
-    size_t m_peakUsage = 0;
-    bool m_initialized = false;
+    size_t totalSize_;
+    size_t usedSize_;
+    std::vector<MemoryBlock> blocks_;
+    std::unique_ptr<char[]> poolMemory_;
 };
-
-} // namespace MCOptimizer
-
-#endif // MEMORY_POOL_H
