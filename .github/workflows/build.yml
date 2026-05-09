@@ -21,7 +21,7 @@ on:
 env:
   MINECRAFT_VERSION: 1.21.11
   JAVA_VERSION: '21'
-  GRADLE_VERSION: '8.5'
+  GRADLE_VERSION: '8.7'
   NDK_VERSION: '26.1.10909125'
 
 jobs:
@@ -42,37 +42,56 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
-      - name: Setup Gradle
+      - name: Setup Gradle 8.7
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: ${{ env.GRADLE_VERSION }}
+          gradle-version: '8.7'
 
       - name: Generate Gradle Wrapper
         run: |
           echo "Checking for gradlew..."
-          if [ ! -f "./gradlew" ]; then
-            echo "gradlew not found, generating..."
-            gradle wrapper --gradle-version ${{ env.GRADLE_VERSION }}
-          else
-            echo "gradlew found, checking version..."
-            ./gradlew --version || {
-              echo "gradlew broken, regenerating..."
-              rm -f ./gradlew
-              gradle wrapper --gradle-version ${{ env.GRADLE_VERSION }}
-            }
-          fi
-          chmod +x ./gradlew
+          ls -la gradlew 2>/dev/null || echo "gradlew not found"
           
-          # Create mod gradlew if missing
-          if [ ! -f "./mod/gradlew" ]; then
-            echo "Creating mod/gradlew..."
-            mkdir -p mod/gradle/wrapper
-            cp gradle/wrapper/gradle-wrapper.jar mod/gradle/wrapper/ 2>/dev/null || true
-            cp gradle/wrapper/gradle-wrapper.properties mod/gradle/wrapper/ 2>/dev/null || true
-            
-            printf '%s\n' '#!/bin/sh' 'cd "$(dirname "$0")/.." || exit 1' 'exec ./gradlew "$@"' > mod/gradlew
-            chmod +x mod/gradlew
+          # Remove broken gradlew if exists
+          if [ -f "./gradlew" ]; then
+            echo "gradlew found, testing..."
+            if ! bash ./gradlew --version >/dev/null 2>&1; then
+              echo "gradlew broken, removing..."
+              rm -f ./gradlew
+              rm -rf ./gradle/wrapper/
+            fi
           fi
+          
+          # Generate fresh wrapper
+          echo "Generating Gradle wrapper v${{ env.GRADLE_VERSION }}..."
+          gradle wrapper --gradle-version ${{ env.GRADLE_VERSION }}
+          
+          # Ensure executable permissions
+          chmod +x ./gradlew
+          ls -la ./gradlew
+          
+          # Verify
+          echo "Verifying gradlew..."
+          ./gradlew --version
+
+      - name: Create Mod Gradle Wrapper
+        run: |
+          # Create mod wrapper that delegates to root
+          mkdir -p mod/gradle/wrapper
+          
+          # Copy wrapper files
+          cp gradle/wrapper/gradle-wrapper.jar mod/gradle/wrapper/ 2>/dev/null || true
+          cp gradle/wrapper/gradle-wrapper.properties mod/gradle/wrapper/ 2>/dev/null || true
+          
+          # Create mod gradlew script
+          cat > mod/gradlew << 'MODGRADLE'
+#!/bin/sh
+cd "$(dirname "$0")/.." || exit 1
+exec ./gradlew "$@"
+MODGRADLE
+          
+          chmod +x mod/gradlew
+          ls -la mod/gradlew
 
       - name: Cache Gradle
         id: cache-gradle
@@ -98,7 +117,7 @@ jobs:
           ls -la gradle/wrapper/
           echo ""
           echo "=== Mod Wrapper ==="
-          ls -la mod/gradlew 2>/dev/null || echo "mod/gradlew not found"
+          ls -la mod/gradlew
 
   # ==================== BUILD ANDROID APK ====================
   build-android:
@@ -135,13 +154,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Generate Gradle Wrapper
+      - name: Fix Gradle Wrapper Permissions
         run: |
+          # Ensure gradlew exists and is executable
           if [ ! -f "./gradlew" ]; then
-            sudo apt-get update && sudo apt-get install -y gradle
-            gradle wrapper --gradle-version ${{ env.GRADLE_VERSION }}
-            chmod +x ./gradlew
+            echo "ERROR: gradlew not found!"
+            exit 1
           fi
+          chmod +x ./gradlew
+          ./gradlew --version
 
       - name: Create local.properties
         run: |
@@ -216,13 +237,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-mod-
 
-      - name: Generate Gradle Wrapper
+      - name: Fix Gradle Wrapper Permissions
         run: |
+          # Ensure gradlew exists and is executable
           if [ ! -f "./gradlew" ]; then
-            sudo apt-get update && sudo apt-get install -y gradle
-            gradle wrapper --gradle-version ${{ env.GRADLE_VERSION }}
-            chmod +x ./gradlew
+            echo "ERROR: gradlew not found!"
+            exit 1
           fi
+          chmod +x ./gradlew
           
           # Ensure mod gradlew exists
           if [ ! -f "./mod/gradlew" ]; then
@@ -230,21 +252,27 @@ jobs:
             cp gradle/wrapper/gradle-wrapper.jar mod/gradle/wrapper/ 2>/dev/null || true
             cp gradle/wrapper/gradle-wrapper.properties mod/gradle/wrapper/ 2>/dev/null || true
             
-            printf '%s\n' '#!/bin/sh' 'cd "$(dirname "$0")/.." || exit 1' 'exec ./gradlew "$@"' > mod/gradlew
+            cat > mod/gradlew << 'MODGRADLE'
+#!/bin/sh
+cd "$(dirname "$0")/.." || exit 1
+exec ./gradlew "$@"
+MODGRADLE
             chmod +x mod/gradlew
           fi
+          
+          ./gradlew --version
 
       - name: Build Minecraft Mod
         run: |
           cd mod
-          ../gradlew build --stacktrace --no-daemon -Pminecraft_version=${{ env.MINECRAFT_VERSION }}
+          bash ../gradlew build --stacktrace --no-daemon -Pminecraft_version=${{ env.MINECRAFT_VERSION }}
         env:
           GRADLE_OPTS: -Xmx4G
 
       - name: Run Mod Tests
         run: |
           cd mod
-          ../gradlew test --stacktrace --no-daemon || echo "Tests completed with warnings"
+          bash ../gradlew test --stacktrace --no-daemon || echo "Tests completed with warnings"
 
       - name: Upload Mod JAR
         uses: actions/upload-artifact@v4
