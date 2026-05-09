@@ -1,16 +1,9 @@
+<!-- MinecraftMobileOptimizer/app/src/main/res/values/strings.xml -->
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MC Optimizer</string>
-    <string name="subtitle">Minecraft FPS Booster</string>
-    <string name="launch_game">Launch Game</string>
+    <string name="launch_minecraft">Launch Minecraft 1.21.11</string>
     <string name="optimize">Optimize</string>
-    <string name="launcher_title">Game Launcher</string>
-    <string name="status_ready">Status: Ready</string>
-    <string name="install_game">Install Game</string>
-    <string name="launch">Launch</string>
-    <string name="fps_display">FPS: --</string>
-    <string name="settings">Settings</string>
-    <string name="about">About</string>
-    <string name="optimization_applied">Optimization applied successfully!</string>
-    <string name="game_not_installed">Game is not installed</string>
+    <string name="target_fps">Target FPS</string>
+    <string name="render_scale">Render Scale</string>
 </resources>
