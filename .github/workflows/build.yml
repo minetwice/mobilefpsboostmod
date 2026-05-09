@@ -21,7 +21,7 @@ on:
 env:
   MINECRAFT_VERSION: '1.21.11'
   JAVA_VERSION: '21'
-  GRADLE_VERSION: '8.8'
+  GRADLE_VERSION: '8.6'
   NDK_VERSION: '26.1.10909125'
 
 jobs:
@@ -41,17 +41,16 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
-      - name: Setup Gradle 8.8
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: '8.8'
+          gradle-version: '8.6'
 
       - name: Generate Gradle Wrapper
         run: |
           echo "Checking for gradlew..."
           ls -la gradlew 2>/dev/null || echo "gradlew not found"
           
-          # Remove broken gradlew if exists
           if [ -f "./gradlew" ]; then
             echo "gradlew found, testing..."
             if ! bash ./gradlew --version >/dev/null 2>&1; then
@@ -61,30 +60,22 @@ jobs:
             fi
           fi
           
-          # Generate fresh wrapper
           echo "Generating Gradle wrapper v${{ env.GRADLE_VERSION }}..."
           gradle wrapper --gradle-version ${{ env.GRADLE_VERSION }}
           
-          # Ensure executable permissions
           chmod +x ./gradlew
           ls -la ./gradlew
           
-          # Verify
           echo "Verifying gradlew..."
           bash ./gradlew --version
 
       - name: Create Mod Gradle Wrapper
         run: |
-          # Create mod wrapper that delegates to root
           mkdir -p mod/gradle/wrapper
-          
-          # Copy wrapper files
           cp gradle/wrapper/gradle-wrapper.jar mod/gradle/wrapper/ 2>/dev/null || true
           cp gradle/wrapper/gradle-wrapper.properties mod/gradle/wrapper/ 2>/dev/null || true
           
-          # Create mod gradlew script using printf
           printf '%s\n' '#!/bin/sh' 'cd "$(dirname "$0")/.." || exit 1' 'exec ./gradlew "$@"' > mod/gradlew
-          
           chmod +x mod/gradlew
           ls -la mod/gradlew
 
