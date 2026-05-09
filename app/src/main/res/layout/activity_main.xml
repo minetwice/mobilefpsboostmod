@@ -1,59 +1,91 @@
+<!-- MinecraftMobileOptimizer/app/src/main/res/layout/activity_main.xml -->
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout 
+<LinearLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
-    tools:context=".launcher.MainActivity">
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#1a1a2e">
 
     <TextView
-        android:id="@+id/txt_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textSize="32sp"
+        android:text="MC Optimizer v1.0.0"
+        android:textSize="22sp"
+        android:textColor="#4ecca3"
         android:textStyle="bold"
-        android:textColor="@color/primary"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="48dp"/>
+        android:layout_gravity="center"
+        android:layout_marginBottom="4dp"/>
 
     <TextView
-        android:id="@+id/txt_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/subtitle"
+        android:text="For Minecraft 1.21.11"
+        android:textSize="14sp"
+        android:textColor="#888"
+        android:layout_gravity="center"
+        android:layout_marginBottom="20dp"/>
+
+    <TextView
+        android:id="@+id/fpsDisplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Current FPS: --"
+        android:textSize="18sp"
+        android:textColor="#4ecca3"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/fpsText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Target FPS: 60"
         android:textSize="16sp"
-        android:textColor="@color/text_secondary"
-        app:layout_constraintTop_toBottomOf="@id/txt_title"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
+        android:textColor="#eee"
+        android:layout_marginBottom="8dp"/>
+
+    <SeekBar
+        android:id="@+id/targetFpsSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="60"
+        android:progress="30"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Render Scale (Resolution)"
+        android:textSize="16sp"
+        android:textColor="#eee"
+        android:layout_marginBottom="8dp"/>
+
+    <SeekBar
+        android:id="@+id/renderScaleSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:progress="100"
+        android:layout_marginBottom="24dp"/>
 
     <Button
-        android:id="@+id/btn_launch_game"
-        android:layout_width="200dp"
-        android:layout_height="56dp"
-        android:text="@string/launch_game"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/txt_subtitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="48dp"/>
+        android:id="@+id/optimizeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Optimize Memory Now"
+        android:backgroundTint="#4ecca3"
+        android:textColor="#1a1a2e"
+        android:layout_marginBottom="16dp"/>
 
     <Button
-        android:id="@+id/btn_optimize"
-        android:layout_width="200dp"
-        android:layout_height="56dp"
-        android:text="@string/optimize"
-        android:textSize="16sp"
-        style="@style/Widget.App.Button.Outlined"
-        app:layout_constraintTop_toBottomOf="@id/btn_launch_game"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        android:id="@+id/launchButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Launch Minecraft 1.21.11"
+        android:backgroundTint="#e94560"
+        android:textColor="#fff"
+        android:textSize="18sp"
+        android:padding="16dp"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
