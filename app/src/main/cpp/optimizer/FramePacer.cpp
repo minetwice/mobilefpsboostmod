@@ -1,70 +1,48 @@
+// MinecraftMobileOptimizer/app/src/main/cpp/optimizer/FramePacer.cpp
 #include "FramePacer.h"
-#include "utils/Logger.h"
 #include <thread>
+#include <android/log.h>
 
-namespace MCOptimizer {
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, "FramePacer", __VA_ARGS__)
 
-FramePacer& FramePacer::getInstance() {
-    static FramePacer instance;
-    return instance;
+FramePacer::FramePacer(int targetFps) 
+    : targetFps_(targetFps)
+    , targetFrameTimeMs_(1000.0f / targetFps)
+    , fpsUpdateTime_(std::chrono::high_resolution_clock::now()) {
+    LOGI("Target FPS: %d (%.2f ms/frame)", targetFps, targetFrameTimeMs_);
 }
 
-void FramePacer::initialize() {
-    Logger::info("FramePacer", "Initializing frame pacer at %d FPS", m_targetFPS);
-    m_frameStart = std::chrono::steady_clock::now();
-}
+FramePacer::~FramePacer() = default;
 
 void FramePacer::beginFrame() {
-    if (!m_enabled) return;
-    m_frameStart = std::chrono::steady_clock::now();
+    frameStart_ = std::chrono::high_resolution_clock::now();
 }
 
 void FramePacer::endFrame() {
-    if (!m_enabled) return;
-    m_frameEnd = std::chrono::steady_clock::now();
-    calculateFrameTime();
-    waitForNextFrame();
-}
-
-void FramePacer::optimize() {
-    Logger::info("FramePacer", "Optimizing frame pacing...");
+    auto frameEnd = std::chrono::high_resolution_clock::now();
+    frameTimeMs_ = std::chrono::duration<float, std::milli>(frameEnd - frameStart_).count();
     
-    // Dynamic frame rate adjustment based on performance
-    if (m_currentFPS < 30.0f && m_targetFPS > 30) {
-        m_targetFPS = 30;
-        Logger::warning("FramePacer", "Lowering target FPS to 30 for stability");
-    } else if (m_currentFPS >= 55.0f && m_targetFPS < 60) {
-        m_targetFPS = 60;
-        Logger::info("FramePacer", "Increasing target FPS to 60");
+    frameCount_++;
+    auto now = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration<float>(now - fpsUpdateTime_).count();
+    
+    if (elapsed >= 1.0f) {
+        currentFps_ = frameCount_;
+        frameCount_ = 0;
+        fpsUpdateTime_ = now;
+        LOGI("FPS: %d | Frame: %.2f ms", currentFps_, frameTimeMs_);
+    }
+    
+    if (frameTimeMs_ < targetFrameTimeMs_) {
+        float sleepMs = targetFrameTimeMs_ - frameTimeMs_;
+        std::this_thread::sleep_for(std::chrono::microseconds(static_cast<int>(sleepMs * 1000)));
     }
 }
 
-void FramePacer::setTargetFPS(int fps) {
-    if (fps <= 0) return;
-    m_targetFPS = fps;
-    Logger::info("FramePacer", "Target FPS set to %d", fps);
-}
+int FramePacer::getCurrentFps() const { return currentFps_; }
+float FramePacer::getFrameTimeMs() const { return frameTimeMs_; }
 
-void FramePacer::calculateFrameTime() {
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-        m_frameEnd - m_frameStart);
-    m_lastFrameTimeMs = duration.count();
-    
-    if (m_lastFrameTimeMs > 0) {
-        m_currentFPS = 1000.0f / static_cast<float>(m_lastFrameTimeMs);
-    }
+void FramePacer::setTargetFps(int fps) {
+    targetFps_ = fps;
+    targetFrameTimeMs_ = 1000.0f / fps;
 }
-
-void FramePacer::waitForNextFrame() {
-    int64_t targetFrameTimeMs = 1000 / m_targetFPS;
-    int64_t elapsedMs = m_lastFrameTimeMs;
-    
-    if (elapsedMs < targetFrameTimeMs) {
-        int64_t sleepMs = targetFrameTimeMs - elapsedMs;
-        if (sleepMs > 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(sleepMs));
-        }
-    }
-}
-
-} // namespace MCOptimizer
