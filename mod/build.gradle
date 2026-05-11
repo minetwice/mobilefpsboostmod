@@ -1,6 +1,6 @@
 // MinecraftMobileOptimizer/mod/build.gradle
 plugins {
-    id 'fabric-loom' version '1.9.2'
+    id 'fabric-loom' version '1.6.12'
     id 'maven-publish'
 }
 
@@ -29,17 +29,12 @@ loom {
 }
 
 dependencies {
-    // Minecraft
+    // Minecraft + Official Mojang mappings + Fabric Loader ONLY
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    
-    // Official Mojang mappings
     mappings loom.officialMojangMappings()
-    
-    // Fabric Loader
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     
-    // Fabric API - direct dependency without BOM
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    // NO Fabric API - add later if needed
 }
 
 processResources {
