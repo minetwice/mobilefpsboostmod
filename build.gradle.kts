@@ -1,6 +1,6 @@
 // MinecraftMobileOptimizer/build.gradle.kts
 plugins {
-    id("com.android.application") version "8.3.0" apply false
+    id("com.android.application") version "8.4.0" apply false
     id("fabric-loom") version "1.6.12" apply false
 }
 
