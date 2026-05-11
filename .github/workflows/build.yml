@@ -21,7 +21,7 @@ on:
 env:
   MINECRAFT_VERSION: '1.21.11'
   JAVA_VERSION: '21'
-  GRADLE_VERSION: '8.5'
+  GRADLE_VERSION: '8.8'
   NDK_VERSION: '26.1.10909125'
 
 jobs:
@@ -41,10 +41,10 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
-      - name: Setup Gradle
+      - name: Setup Gradle 8.8
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: ${{ env.GRADLE_VERSION }}
+          gradle-version: '8.8'
 
       - name: Generate Gradle Wrapper
         run: |
