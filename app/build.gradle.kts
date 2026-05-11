@@ -1,74 +1,67 @@
-// MinecraftMobileOptimizer/mod/build.gradle
+// MinecraftMobileOptimizer/app/build.gradle.kts
 plugins {
-    id 'fabric-loom' version '1.6.12'
-    id 'maven-publish'
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android") version "1.9.20"
 }
 
-version = project.mod_version
-group = project.maven_group
+android {
+    namespace = "com.mcoptimizer"
+    compileSdk = 34
 
-base {
-    archivesName = project.archives_base_name
-}
+    defaultConfig {
+        applicationId = "com.mcoptimizer.launcher"
+        minSdk = 26
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0.0"
 
-repositories {
-    mavenCentral()
-    maven { url = "https://maven.fabricmc.net/" }
-    maven { url = "https://maven.terraformersmc.com/" }
-}
-
-loom {
-    splitEnvironmentSourceSets()
-
-    mods {
-        "mcoptimizer" {
-            sourceSet sourceSets.main
-            sourceSet sourceSets.client
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
         }
+        
+        externalNativeBuild {
+            cmake {
+                cppFlags += "-O3 -ffast-math -funroll-loops -std=c++17"
+                arguments += "-DANDROID_STL=c++_shared"
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+        debug {
+            isDebuggable = true
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    kotlinOptions {
+        jvmTarget = "21"
     }
 }
 
 dependencies {
-    // Minecraft + Official Mojang mappings + Fabric Loader ONLY
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    
-    // NO Fabric API - add later if needed
-}
-
-processResources {
-    def version = project.version
-    inputs.property "version", version
-
-    filesMatching("fabric.mod.json") {
-        expand "version": version
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
-}
-
-java {
-    withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-}
-
-jar {
-    def projectName = project.archives_base_name
-    inputs.property "projectName", projectName
-
-    from("LICENSE") {
-        rename { "${it}_${projectName}" }
-    }
-}
-
-publishing {
-    publications {
-        create("mavenJava", MavenPublication) {
-            from components.java
-        }
-    }
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 }
