@@ -244,12 +244,14 @@ jobs:
           cd mod
           bash ../gradlew build --stacktrace --no-daemon -Pminecraft_version=${{ env.MINECRAFT_VERSION }}
         env:
-          GRADLE_OPTS: -Xmx4G
+          GRADLE_OPTS: "-Xmx4G"
 
       - name: Run Mod Tests
         run: |
           cd mod
           bash ../gradlew test --stacktrace --no-daemon || echo "Tests completed with warnings"
+        env:
+          GRADLE_OPTS: "-Xmx4G"
 
       - name: Upload Mod JAR
         uses: actions/upload-artifact@v4
